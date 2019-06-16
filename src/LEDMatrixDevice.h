@@ -2,13 +2,19 @@
 #define ESP_LIGHT_DEVICE_CONTROL_H
 
 
-#include <map>
+#include <queue>
 #include "Config.h"
 
-#include <Ds1302.h>
 #include <LEDMatrixDriver.hpp>
 
 class DS1302RTC;
+
+struct Notification
+{
+  byte *icon = nullptr;
+  std::string text;
+  int timeout;
+};
 
 class LEDMatrixDevice
 {
@@ -66,6 +72,7 @@ private:
   byte *m_notificationIcon = nullptr;
   byte m_emptyIcon[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   int m_text_x = 0;
+  std::queue<Notification*> m_notificationQueue;
 
   /* Internal timer */
   bool m_internalTimerActive = false;
