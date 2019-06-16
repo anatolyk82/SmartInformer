@@ -49,6 +49,9 @@ public:
   void setBrightness( uint8_t brightness );
   void setSecondsVisible( const bool secondsVisible );
 
+  /* Button's callbacks */
+  void buttonPressAndHold();
+
 private:
   void drawSprite( byte* sprite, int x, int y, int width, int height );
   void drawString( const char* text, int len, int x, int y );

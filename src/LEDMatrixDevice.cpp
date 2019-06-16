@@ -149,6 +149,12 @@ void LEDMatrixDevice::setSecondsVisible( const bool secondsVisible )
 }
 
 
+void LEDMatrixDevice::buttonPressAndHold()
+{
+  setState( !m_state );
+}
+
+
 void LEDMatrixDevice::run()
 {
   time_t myTime;

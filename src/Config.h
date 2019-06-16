@@ -36,6 +36,8 @@
 #define RTC_DAT_PIN D2
 #define RTC_RST_PIN D3
 
+/* Button */
+#define BUTTON_PIN D0
 
 
 /* Calculates uptime for the device */

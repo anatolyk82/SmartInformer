@@ -5,6 +5,7 @@
 #include "UiManager.h"
 #include "MqttClient.h"
 #include "LEDMatrixDevice.h"
+#include "ControlButton.h"
 
 /* Create a UI manager */
 UiManager uiManager;
@@ -17,6 +18,8 @@ LEDMatrixDevice *device;
 
 /* Timer to publish the current state */
 SimpleTimer timer;
+
+ControlButton button;
 
 void publishDeviceStateTimer() {
   mqttClient.publishDeviceState();
@@ -80,6 +83,12 @@ void setup() {
     ESP.restart();
   }
 
+  /* Initialize the button */
+  button.init(BUTTON_PIN);
+  //button.onClicked( std::bind(&LEDMatrixDevice::buttonPressAndHold, device) );
+  //button.onDoubleClicked( std::bind(&LEDMatrixDevice::buttonPressAndHold, device) );
+  button.onPressAndHold( std::bind(&LEDMatrixDevice::buttonPressAndHold, device) );
+
   /* Publish device state periodicly */
   timer.setInterval(INTERVAL_PUBLISH_STATE, publishDeviceStateTimer);
 }
@@ -89,6 +98,7 @@ void loop() {
   timer.run();
 
   device->run();
+  button.run();
 
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("loop(): WiFi is not connected. Reset the device to initiate connection again.");
