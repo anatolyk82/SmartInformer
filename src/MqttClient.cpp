@@ -142,24 +142,30 @@ void DeviceMqttClient::onMqttMessage(char* topic, char* payload, AsyncMqttClient
         second = json["second"].as<uint8_t>();
       }
 
-      int8_t day = -1;
+      uint8_t day = 0;
       if (json.containsKey("day")) {
-        day = json["day"].as<int8_t>();
+        day = json["day"].as<uint8_t>();
       }
 
-      int8_t month = -1;
+      uint8_t month = 0;
       if (json.containsKey("month")) {
-        month = json["month"].as<int8_t>();
+        month = json["month"].as<uint8_t>();
       }
 
-      int16_t year = -1;
+      uint16_t year = 0;
       if (json.containsKey("year")) {
-        year = json["year"].as<int8_t>();
+        year = json["year"].as<uint16_t>();
       }
 
-      m_device->setTime(hour, minute, second, day, month, year);
+      bool dateIsValid = (day != 0) && (month != 0) && (year != 0);
+      bool timeIsValid = ( (hour >= 0) && (hour < 24) ) &&
+                         ( (minute >= 0) && (minute < 60) ) &&
+                         ( (second >= 0) && (second < 60) );
+      if (dateIsValid && timeIsValid) {
+        m_device->setTime(hour, minute, second, day, month, year);
+      }
     }
-
+    
   } else {
     Serial.println("failed");
   }

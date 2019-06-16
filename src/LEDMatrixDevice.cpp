@@ -10,7 +10,7 @@ LEDMatrixDevice::LEDMatrixDevice()
   m_driver = new LEDMatrixDriver(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN, LEDMatrixDriver::INVERT_DISPLAY_X | LEDMatrixDriver::INVERT_SEGMENT_X | LEDMatrixDriver::INVERT_Y );
   m_rtc = new DS1302RTC( RTC_RST_PIN, RTC_DAT_PIN,  RTC_CLK_PIN ); //CE, IO, CLK
 
-  m_driver->setEnabled(m_state);
+  m_driver->setEnabled(true);
   m_driver->setIntensity(m_brightness); // 0 = low, 10 = high
   m_driver->clear();
 
@@ -103,25 +103,15 @@ void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int t
 }
 
 
-void LEDMatrixDevice::setTime(uint8_t hour, uint8_t minute, uint8_t second, int8_t day, int8_t month, int16_t year)
+void LEDMatrixDevice::setTime(uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t month, uint16_t year)
 {
   tmElements_t tm;
   tm.Hour = hour > 23 ? 23 : hour;
   tm.Minute = minute > 59 ? 59 : minute;
   tm.Second = second > 59 ? 59 : second;
-
-  if (day > -1) {
-    tm.Day = day;
-  }
-
-  if (month > -1) {
-    tm.Month = month;
-  }
-
-  if (year > -1) {
-    tm.Year = year;
-  }
-
+  tm.Day = day;
+  tm.Month = month;
+  tm.Year = year;
   m_rtc->write(tm);
 }
 

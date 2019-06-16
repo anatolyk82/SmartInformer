@@ -23,7 +23,7 @@ public:
     Notification
   };
 
-  void setTime(uint8_t hour, uint8_t minute, uint8_t second, int8_t day = -1, int8_t month = -1, int16_t year = -1);
+  void setTime(uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t month, uint16_t year);
   void setNotification( byte *icon, const std::string &text, int timeout = -1 );
 
   /*
