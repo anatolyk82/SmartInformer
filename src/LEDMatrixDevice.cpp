@@ -142,6 +142,12 @@ void LEDMatrixDevice::setState( const bool state )
 }
 
 
+void LEDMatrixDevice::setSecondsVisible( const bool secondsVisible )
+{
+  m_driver->clear();
+  m_secondsVisible = secondsVisible;
+}
+
 void LEDMatrixDevice::run()
 {
   time_t myTime;
@@ -153,9 +159,20 @@ void LEDMatrixDevice::run()
 
   if (m_displayState == DisplayState::Time) {
     char buf[8];
-    std::sprintf( buf, "%02d:%02d:%02d", hour(myTime), minute(myTime), second(myTime) );
-    drawString(buf, 8, 0, 0);
-    delay(500);
+    if (m_secondsVisible) {
+      std::sprintf( buf, "%02d:%02d:%02d", hour(myTime), minute(myTime), second(myTime) );
+      drawString(buf, 8, 0, 0);
+      delay(500);
+    } else {
+      if (m_secondDelimiterVisible) {
+        std::sprintf( buf, "%02d:%02d", hour(myTime), minute(myTime) );
+      } else {
+        std::sprintf( buf, "%02d %02d", hour(myTime), minute(myTime) );
+      }
+      m_secondDelimiterVisible = !m_secondDelimiterVisible;
+      drawString(buf, 5, 13, 0);
+      delay(1000);
+    }
   } else if (m_displayState == DisplayState::Notification) {
     const char *text = m_notificationText.c_str();
     int len = m_notificationText.length();
@@ -195,6 +212,7 @@ void LEDMatrixDevice::run()
       delete [] m_notificationIcon;
       m_notificationIcon = nullptr;
     }
+    m_driver->clear();
   }
 
   m_driver->display();

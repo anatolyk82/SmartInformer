@@ -120,6 +120,10 @@ void DeviceMqttClient::onMqttMessage(char* topic, char* payload, AsyncMqttClient
       if (json.containsKey("state")) {
         m_device->setState( json["state"].as<bool>() );
       }
+
+      if (json.containsKey("secondsVisible")) {
+        m_device->setSecondsVisible( json["secondsVisible"].as<bool>() );
+      }
     }
 
     if (std::string(topic) == "informer/set/time") {

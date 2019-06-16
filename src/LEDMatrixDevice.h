@@ -36,10 +36,12 @@ public:
   /* Getters */
   bool state() const { return m_state; }
   uint8_t brightness() const { return m_brightness; }
+  bool secondsVisible() const { return m_secondsVisible; }
 
   /* Setters */
   void setState( const bool state );
   void setBrightness( uint8_t brightness );
+  void setSecondsVisible( const bool secondsVisible );
 
 private:
   void drawSprite( byte* sprite, int x, int y, int width, int height );
@@ -49,6 +51,8 @@ private:
   /* Properties */
   bool m_state = true;
   uint8_t m_brightness = 5;
+  bool m_secondsVisible = true;
+  bool m_secondDelimiterVisible = true;
 
   /* Devices */
   LEDMatrixDriver *m_driver = nullptr;
