@@ -114,19 +114,18 @@ void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int t
 
 void LEDMatrixDevice::setScreen( uint8_t id, byte *icon, const std::string &text )
 {
+  for (Screen* screen : m_screenList) {
+    if (screen->id == id) {
+      screen->icon = icon;
+      screen->text = text;
+      return;
+    }
+  }
+
   Screen *scr = new Screen();
   scr->id = id;
-
-  if (icon) {
-    scr->icon = icon;
-  } else {
-    scr->icon = nullptr;
-  }
-
-  if (text != "") {
-    scr->text = text;
-  }
-
+  scr->icon = icon;
+  scr->text = text;
   m_screenList.push_back(scr);
 }
 
