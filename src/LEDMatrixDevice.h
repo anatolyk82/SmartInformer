@@ -59,12 +59,15 @@ public:
   void setSecondsVisible( const bool secondsVisible );
 
   /* Button's callbacks */
+  void buttonClicked();
   void buttonPressAndHold();
 
 private:
   void drawSprite( byte* sprite, int x, int y, int width, int height );
   void drawString( const char* text, int len, int x, int y );
   uint8_t flipByte( uint8_t c ) const;
+
+  void dismissNotification();
 
   /* Properties */
   bool m_state = true;
@@ -93,6 +96,7 @@ private:
 
   /* Screen */
   std::vector<Screen*> m_screenList;
+  int m_screen_y = -8;
 };
 
 #endif //ESP_LIGHT_DEVICE_CONTROL_H

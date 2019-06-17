@@ -168,9 +168,51 @@ void LEDMatrixDevice::setSecondsVisible( const bool secondsVisible )
 }
 
 
+void LEDMatrixDevice::buttonClicked()
+{
+  if (m_displayState == DisplayState::Notification) {
+    this->dismissNotification();
+  }
+}
+
+
 void LEDMatrixDevice::buttonPressAndHold()
 {
   setState( !m_state );
+}
+
+
+void LEDMatrixDevice::dismissNotification()
+{
+  // Reset timer's parameters
+  m_internalTimerTimeoutMilliseconds = 0;
+  m_internalTimerStart = 0;
+  m_internalTimerActive = false;
+
+  // Release notification memory
+  Notification *ntf = m_notificationQueue.front();
+  // Release icon's memory
+  if (ntf->icon) {
+    delete [] ntf->icon;
+  }
+  delete ntf;
+
+  //Remove the element from the queue
+  m_notificationQueue.pop();
+
+  if ( m_notificationQueue.empty() ) {
+    m_displayState = DisplayState::Time;
+  } else {
+    m_displayState = DisplayState::Notification;
+    // Prepare the screen and the timer for the next notification in the queue
+    m_text_x = 0;
+    if (m_notificationQueue.front()->timeout > 0) {
+      m_internalTimerTimeoutMilliseconds = m_notificationQueue.front()->timeout * 1000;
+      m_internalTimerActive = true;
+    }
+  }
+
+  m_driver->clear();
 }
 
 
@@ -223,7 +265,6 @@ void LEDMatrixDevice::run()
       m_text_x = ((screenLength - textLength) / 2 + 1) * 8;
       delay(300);
     }
-
   }
   else
   {
@@ -235,35 +276,7 @@ void LEDMatrixDevice::run()
   if ( ((millis() - m_internalTimerStart) >= m_internalTimerTimeoutMilliseconds) &&
       (m_internalTimerStart > 0) &&
       m_internalTimerActive) {
-    // Reset timer's parameters
-    m_internalTimerTimeoutMilliseconds = 0;
-    m_internalTimerStart = 0;
-    m_internalTimerActive = false;
-
-    // Release notification memory
-    Notification *ntf = m_notificationQueue.front();
-    // Release icon's memory
-    if (ntf->icon) {
-      delete [] ntf->icon;
-    }
-    delete ntf;
-
-    //Remove the element from the queue
-    m_notificationQueue.pop();
-
-    if ( m_notificationQueue.empty() ) {
-      m_displayState = DisplayState::Time;
-    } else {
-      m_displayState = DisplayState::Notification;
-      // Prepare the screen and the timer for the next notification in the queue
-      m_text_x = 0;
-      if (m_notificationQueue.front()->timeout > 0) {
-        m_internalTimerTimeoutMilliseconds = m_notificationQueue.front()->timeout * 1000;
-        m_internalTimerActive = true;
-      }
-    }
-
-    m_driver->clear();
+    dismissNotification();
   }
 
   m_driver->display();

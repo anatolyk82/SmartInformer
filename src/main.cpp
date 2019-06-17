@@ -85,8 +85,7 @@ void setup() {
 
   /* Initialize the button */
   button.init(BUTTON_PIN);
-  //button.onClicked( std::bind(&LEDMatrixDevice::buttonPressAndHold, device) );
-  //button.onDoubleClicked( std::bind(&LEDMatrixDevice::buttonPressAndHold, device) );
+  button.onClicked( std::bind(&LEDMatrixDevice::buttonClicked, device) );
   button.onPressAndHold( std::bind(&LEDMatrixDevice::buttonPressAndHold, device) );
 
   /* Publish device state periodicly */
