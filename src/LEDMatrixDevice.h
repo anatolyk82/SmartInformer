@@ -34,6 +34,7 @@ public:
   enum class DisplayState {
     None,
     Time,
+    Screen,
     Notification
   };
 
@@ -67,6 +68,7 @@ private:
   void drawString( const char* text, int len, int x, int y );
   uint8_t flipByte( uint8_t c ) const;
 
+  void dismissScreen();
   void dismissNotification();
 
   /* Properties */
@@ -86,17 +88,21 @@ private:
   std::string m_notificationText;
   byte *m_notificationIcon = nullptr;
   byte m_emptyIcon[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-  int m_text_x = 0;
+  int m_textX = 0;
   std::queue<Notification*> m_notificationQueue;
 
-  /* Internal notification timer */
-  bool m_internalTimerActive = false;
-  unsigned long m_internalTimerStart = 0;
-  unsigned long m_internalTimerTimeoutMilliseconds = 0;
+  /* Notification timer */
+  bool m_notificationTimerActive = false;
+  unsigned long m_notificationTimerStart = 0;
+  unsigned long m_notificationTimerTimeoutMilliseconds = 0;
 
   /* Screen */
   std::vector<Screen*> m_screenList;
-  int m_screen_y = -8;
+  uint8_t m_screenIndex = 0;
+
+  bool m_screenTimerActive = false;
+  unsigned long m_screenTimerStart = 0;
+  unsigned long m_screenTimerTimeoutMilliseconds = 4000;
 };
 
 #endif //ESP_LIGHT_DEVICE_CONTROL_H

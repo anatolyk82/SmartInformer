@@ -99,10 +99,10 @@ void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int t
 
   if ( m_notificationQueue.empty() ) {
     m_driver->clear();
-    m_text_x = ntf->icon != nullptr ? 8 : 0;
+    m_textX = ntf->icon != nullptr ? 8 : 0;
     if (timeout > 0) {
-      m_internalTimerTimeoutMilliseconds = timeout * 1000;
-      m_internalTimerActive = true;
+      m_notificationTimerTimeoutMilliseconds = timeout * 1000;
+      m_notificationTimerActive = true;
     }
     m_displayState = DisplayState::Notification;
   }
@@ -172,6 +172,18 @@ void LEDMatrixDevice::buttonClicked()
 {
   if (m_displayState == DisplayState::Notification) {
     this->dismissNotification();
+  } else if ((m_displayState == DisplayState::Time) && (m_screenList.size() > 0)) {
+    m_displayState = DisplayState::Screen;
+    m_screenTimerActive = true;
+    m_screenTimerStart = millis();
+    m_driver->clear();
+  } else if ((m_displayState == DisplayState::Screen) && (m_screenList.size() > 1)) {
+    dismissScreen();
+    m_displayState = DisplayState::Screen;
+    m_screenTimerActive = true;
+    m_screenTimerStart = millis();
+  } else if ((m_displayState == DisplayState::Screen) && (m_screenList.size() == 1)) {
+    dismissScreen();
   }
 }
 
@@ -182,12 +194,27 @@ void LEDMatrixDevice::buttonPressAndHold()
 }
 
 
+void LEDMatrixDevice::dismissScreen()
+{
+  // Reset timer's parameters
+  m_screenTimerStart = 0;
+  m_screenTimerActive = false;
+
+  m_screenIndex = m_screenIndex < (m_screenList.size()-1) ? m_screenIndex + 1 : 0;
+
+  if (m_displayState != DisplayState::Notification) {
+    m_displayState = DisplayState::Time;
+    m_driver->clear();
+  }
+}
+
+
 void LEDMatrixDevice::dismissNotification()
 {
   // Reset timer's parameters
-  m_internalTimerTimeoutMilliseconds = 0;
-  m_internalTimerStart = 0;
-  m_internalTimerActive = false;
+  m_notificationTimerTimeoutMilliseconds = 0;
+  m_notificationTimerStart = 0;
+  m_notificationTimerActive = false;
 
   // Release notification memory
   Notification *ntf = m_notificationQueue.front();
@@ -205,10 +232,10 @@ void LEDMatrixDevice::dismissNotification()
   } else {
     m_displayState = DisplayState::Notification;
     // Prepare the screen and the timer for the next notification in the queue
-    m_text_x = 0;
+    m_textX = 0;
     if (m_notificationQueue.front()->timeout > 0) {
-      m_internalTimerTimeoutMilliseconds = m_notificationQueue.front()->timeout * 1000;
-      m_internalTimerActive = true;
+      m_notificationTimerTimeoutMilliseconds = m_notificationQueue.front()->timeout * 1000;
+      m_notificationTimerActive = true;
     }
   }
 
@@ -219,8 +246,12 @@ void LEDMatrixDevice::dismissNotification()
 void LEDMatrixDevice::run()
 {
 
-  if ((m_internalTimerStart == 0) && (m_internalTimerActive)) {
-    m_internalTimerStart = millis();
+  if ((m_notificationTimerStart == 0) && (m_notificationTimerActive)) {
+    m_notificationTimerStart = millis();
+  }
+
+  if ((m_screenTimerStart == 0) && (m_screenTimerActive)) {
+    m_screenTimerStart = millis();
   }
 
   if (m_displayState == DisplayState::Time)
@@ -242,29 +273,47 @@ void LEDMatrixDevice::run()
       delay(1000);
     }
   }
+  else if (m_displayState == DisplayState::Screen)
+  {
+    Screen *scr = m_screenList.at(m_screenIndex);
+    uint8_t screenLength = scr->icon ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
+    const char *text = scr->text.c_str();
+    int textLength = scr->text.length();
+
+    if (textLength > screenLength) {
+      m_textX = (m_textX < -8 * textLength + 8 * (scr->icon != nullptr)) ? LEDMATRIX_WIDTH : (m_textX - 1);
+    } else {
+      m_textX = ((screenLength - textLength) / 2 + 1) * 8;
+    }
+
+    if (scr->icon) {
+      drawSprite(scr->icon, 0, 0, 8, 8);
+    }
+    drawString( text, textLength, m_textX, 0 );
+
+    delay((textLength > screenLength ? 50 : 300));
+  }
   else if (m_displayState == DisplayState::Notification)
   {
     Notification *ntf = m_notificationQueue.front();
 
+    bool iconExists = ntf->icon != nullptr;
+    uint8_t screenLength = iconExists ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
     const char *text = ntf->text.c_str();
     int textLength = ntf->text.length();
-    bool iconExists = ntf->icon != nullptr;
+    if (textLength > screenLength) {
+      m_textX = (m_textX < -8 * textLength + 8 * iconExists) ? LEDMATRIX_WIDTH : (m_textX - 1);
+    } else {
+      m_textX = ((screenLength - textLength) / 2 + 1) * 8;
+    }
 
-    uint8_t screenLength = iconExists ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
-
-    drawString(text, textLength, m_text_x, 0);
+    drawString(text, textLength, m_textX, 0);
 
     if (iconExists) {
       drawSprite(ntf->icon, 0, 0, 8, 8);
     }
 
-    if (textLength > screenLength) {
-      m_text_x = (m_text_x < -8 * textLength + 8 * iconExists) ? LEDMATRIX_WIDTH : (m_text_x - 1);
-      delay(40);
-    } else {
-      m_text_x = ((screenLength - textLength) / 2 + 1) * 8;
-      delay(300);
-    }
+    delay((textLength > screenLength ? 50 : 300));
   }
   else
   {
@@ -272,11 +321,16 @@ void LEDMatrixDevice::run()
     delay(1000);
   }
 
-  /* Internal notification timer */
-  if ( ((millis() - m_internalTimerStart) >= m_internalTimerTimeoutMilliseconds) &&
-      (m_internalTimerStart > 0) &&
-      m_internalTimerActive) {
+  /* The notification timer */
+  if ( ((millis() - m_notificationTimerStart) >= m_notificationTimerTimeoutMilliseconds) &&
+      (m_notificationTimerStart > 0) && m_notificationTimerActive) {
     dismissNotification();
+  }
+
+  /* The screen timer */
+  if ( ((millis() - m_screenTimerStart) >= m_screenTimerTimeoutMilliseconds) &&
+      (m_screenTimerStart > 0) && m_screenTimerActive) {
+    dismissScreen();
   }
 
   m_driver->display();
