@@ -158,6 +158,7 @@ void LEDMatrixDevice::setState( const bool state )
   m_driver->clear();
   m_state = state;
   m_displayState = state ? DisplayState::Time : DisplayState::None;
+  m_switchOffAfterNotification = (m_displayState == DisplayState::None);
 }
 
 
@@ -228,7 +229,7 @@ void LEDMatrixDevice::dismissNotification()
   m_notificationQueue.pop();
 
   if ( m_notificationQueue.empty() ) {
-    m_displayState = DisplayState::Time;
+    m_displayState = m_switchOffAfterNotification ? DisplayState::None : DisplayState::Time;
   } else {
     m_displayState = DisplayState::Notification;
     // Prepare the screen and the timer for the next notification in the queue

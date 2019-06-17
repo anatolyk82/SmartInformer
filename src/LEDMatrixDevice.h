@@ -83,6 +83,7 @@ private:
 
   /* Displaying information */
   DisplayState m_displayState = DisplayState::None;
+  bool m_switchOffAfterNotification = false;
 
   /* Notifications */
   std::string m_notificationText;
