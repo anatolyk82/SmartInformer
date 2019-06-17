@@ -3,7 +3,7 @@
 #include <string>
 
 #include <Arduino.h>
-#include "DS1302RTC.h"
+#include "DS1302RTC.h" // https://github.com/iot-playground/Arduino/tree/master/external_libraries/DS1302RTC
 
 LEDMatrixDevice::LEDMatrixDevice()
 {
@@ -99,7 +99,7 @@ void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int t
 
   if ( m_notificationQueue.empty() ) {
     m_driver->clear();
-    m_text_x = 0;
+    m_text_x = ntf->icon != nullptr ? 8 : 0;
     if (timeout > 0) {
       m_internalTimerTimeoutMilliseconds = timeout * 1000;
       m_internalTimerActive = true;
@@ -112,7 +112,26 @@ void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int t
 }
 
 
-void LEDMatrixDevice::setTime(uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t month, uint16_t year)
+void LEDMatrixDevice::setScreen( uint8_t id, byte *icon, const std::string &text )
+{
+  Screen *scr = new Screen();
+  scr->id = id;
+
+  if (icon) {
+    scr->icon = icon;
+  } else {
+    scr->icon = nullptr;
+  }
+
+  if (text != "") {
+    scr->text = text;
+  }
+
+  m_screenList.push_back(scr);
+}
+
+
+void LEDMatrixDevice::setTime( uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t month, uint16_t year )
 {
   tmElements_t tm;
   tm.Hour = hour > 23 ? 23 : hour;
@@ -157,8 +176,6 @@ void LEDMatrixDevice::buttonPressAndHold()
 
 void LEDMatrixDevice::run()
 {
-  time_t myTime;
-  myTime = m_rtc->get();
 
   if ((m_internalTimerStart == 0) && (m_internalTimerActive)) {
     m_internalTimerStart = millis();
@@ -166,6 +183,7 @@ void LEDMatrixDevice::run()
 
   if (m_displayState == DisplayState::Time)
   {
+    time_t myTime = m_rtc->get();
     char buf[8];
     if (m_secondsVisible) {
       std::sprintf( buf, "%02d:%02d:%02d", hour(myTime), minute(myTime), second(myTime) );
@@ -187,24 +205,23 @@ void LEDMatrixDevice::run()
     Notification *ntf = m_notificationQueue.front();
 
     const char *text = ntf->text.c_str();
-    int len = ntf->text.length();
+    int textLength = ntf->text.length();
+    bool iconExists = ntf->icon != nullptr;
 
-    if (len > (LEDMATRIX_SEGMENTS - 1)) {
-      if ( --m_text_x < len * -8 ) {
-    		m_text_x = (LEDMATRIX_WIDTH - 8);
-    	}
-      delay(40);
-    } else {
-      m_text_x = (((LEDMATRIX_SEGMENTS - 1) - len) / 2 + 1) * 8;
-      delay(300);
+    uint8_t screenLength = iconExists ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
+
+    drawString(text, textLength, m_text_x, 0);
+
+    if (iconExists) {
+      drawSprite(ntf->icon, 0, 0, 8, 8);
     }
 
-    drawString(text, len, m_text_x, 0);
-
-    if (ntf->icon) {
-      drawSprite(ntf->icon, 0, 0, 8, 8);
+    if (textLength > screenLength) {
+      m_text_x = (m_text_x < -8 * textLength + 8 * iconExists) ? LEDMATRIX_WIDTH : (m_text_x - 1);
+      delay(40);
     } else {
-      drawSprite(m_emptyIcon, 0, 0, 8, 8);
+      m_text_x = ((screenLength - textLength) / 2 + 1) * 8;
+      delay(300);
     }
 
   }

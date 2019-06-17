@@ -85,6 +85,7 @@ void DeviceMqttClient::onMqttMessage(char* topic, char* payload, AsyncMqttClient
   if (json.success()) {
     Serial.println("ok");
 
+    /* Notification */
     if (std::string(topic) == "informer/set/notification") {
       byte* iconBuffer = nullptr;
       if (json.containsKey("icon")) {
@@ -111,6 +112,7 @@ void DeviceMqttClient::onMqttMessage(char* topic, char* payload, AsyncMqttClient
       m_device->setNotification(iconBuffer, textString, timeout);
     }
 
+    /* Settings */
     if (std::string(topic) == "informer/set/settings") {
       if (json.containsKey("brightness")) {
         uint8_t brightness = json["brightness"].as<uint8_t>();
@@ -126,6 +128,7 @@ void DeviceMqttClient::onMqttMessage(char* topic, char* payload, AsyncMqttClient
       }
     }
 
+    /* Time */
     if (std::string(topic) == "informer/set/time") {
       uint8_t hour = 0;
       if (json.containsKey("hour")) {
@@ -165,7 +168,38 @@ void DeviceMqttClient::onMqttMessage(char* topic, char* payload, AsyncMqttClient
         m_device->setTime(hour, minute, second, day, month, year);
       }
     }
-    
+
+    /* Screens */
+    if (std::string(topic) == "informer/set/screen") {
+      bool idIsDefined = false;
+      int id = 0;
+      if (json.containsKey("id")) {
+        id = json["id"].as<uint8_t>();
+        idIsDefined = true;
+      }
+
+      byte* iconBuffer = nullptr;
+      if (json.containsKey("icon")) {
+        JsonArray &iconArray = json["icon"];
+        if (iconArray.size() == 8) {
+          iconBuffer = new byte[8];
+          uint8_t i = 0;
+          for (auto &byteValue : iconArray) {
+            iconBuffer[i++] = byteValue.as<int>();
+          }
+        }
+      }
+
+      std::string textString = "";
+      if (json.containsKey("text")) {
+        textString = json["text"].as<const char*>();
+      }
+
+      if (idIsDefined) {
+        m_device->setScreen(id, iconBuffer, textString);
+      }
+    }
+
   } else {
     Serial.println("failed");
   }

@@ -3,6 +3,7 @@
 
 
 #include <queue>
+#include <vector>
 #include "Config.h"
 
 #include <LEDMatrixDriver.hpp>
@@ -14,6 +15,13 @@ struct Notification
   byte *icon = nullptr;
   std::string text;
   int timeout;
+};
+
+struct Screen
+{
+  uint8_t id;
+  byte *icon = nullptr;
+  std::string text;
 };
 
 class LEDMatrixDevice
@@ -29,8 +37,9 @@ public:
     Notification
   };
 
-  void setTime(uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t month, uint16_t year);
+  void setTime( uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t month, uint16_t year );
   void setNotification( byte *icon, const std::string &text, int timeout = -1 );
+  void setScreen( uint8_t id, byte *icon, const std::string &text );
 
   /*
    * Run the device.
@@ -77,11 +86,13 @@ private:
   int m_text_x = 0;
   std::queue<Notification*> m_notificationQueue;
 
-  /* Internal timer */
+  /* Internal notification timer */
   bool m_internalTimerActive = false;
   unsigned long m_internalTimerStart = 0;
   unsigned long m_internalTimerTimeoutMilliseconds = 0;
 
+  /* Screen */
+  std::vector<Screen*> m_screenList;
 };
 
 #endif //ESP_LIGHT_DEVICE_CONTROL_H
