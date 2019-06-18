@@ -13,7 +13,7 @@ class DS1302RTC;
 
 struct Notification
 {
-  byte *icon = nullptr;
+  std::vector<byte> icon;
   std::string text;
   int timeout;
 };
@@ -40,7 +40,7 @@ public:
   };
 
   void setTime( uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t month, uint16_t year );
-  void setNotification( byte *icon, const std::string &text, int timeout = -1 );
+  void setNotification( const std::vector<byte> &icon, const std::string &text, int timeout = -1 );
   void setScreen( uint8_t id, byte *icon, const std::string &text );
 
   /*

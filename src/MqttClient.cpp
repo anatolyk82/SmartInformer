@@ -87,14 +87,12 @@ void DeviceMqttClient::onMqttMessage(char* topic, char* payload, AsyncMqttClient
 
     /* Notification */
     if (std::string(topic) == "informer/set/notification") {
-      byte* iconBuffer = nullptr;
+      std::vector<byte> icon;
       if (json.containsKey("icon")) {
         JsonArray &iconArray = json["icon"];
-        if (iconArray.size() == 8) {
-          iconBuffer = new byte[8];
-          uint8_t i = 0;
+        if (iconArray.size() % 8 == 0) {
           for (auto &byteValue : iconArray) {
-            iconBuffer[i++] = byteValue.as<int>();
+            icon.push_back(byteValue.as<byte>());
           }
         }
       }
@@ -109,7 +107,7 @@ void DeviceMqttClient::onMqttMessage(char* topic, char* payload, AsyncMqttClient
         timeout = json["timeout"].as<int>();
       }
 
-      m_device->setNotification(iconBuffer, textString, timeout);
+      m_device->setNotification(icon, textString, timeout);
     }
 
     /* Settings */

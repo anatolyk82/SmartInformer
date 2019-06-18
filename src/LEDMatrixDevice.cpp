@@ -80,18 +80,18 @@ uint8_t LEDMatrixDevice::flipByte(uint8_t c) const
 }
 
 
-void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int timeout)
+void LEDMatrixDevice::setNotification( const std::vector<byte> &icon, const std::string &text, int timeout )
 {
   std::shared_ptr<Notification> ntf = std::make_shared<Notification>();
-  ntf->icon = icon;
-  ntf->text = text;
+  ntf->icon = std::move(icon);
+  ntf->text = std::move(text);
   if (timeout > 0) {
     ntf->timeout = timeout;
   }
 
   if ( m_notificationQueue.empty() ) {
     m_driver->clear();
-    m_textX = ntf->icon != nullptr ? 8 : 0;
+    m_textX = ntf->icon.size();
     if (timeout > 0) {
       m_notificationTimerTimeoutMilliseconds = timeout * 1000;
       m_notificationTimerActive = true;
@@ -208,14 +208,7 @@ void LEDMatrixDevice::dismissNotification()
   m_notificationTimerStart = 0;
   m_notificationTimerActive = false;
 
-  // Release notification memory
-  // Release icon's memory
-  if (m_notificationQueue.front()->icon) {
-    delete [] m_notificationQueue.front()->icon;
-  }
-  //delete ntf;
-
-  //Remove the element from the queue
+  // Release notification memory: remove the element from the queue
   m_notificationQueue.pop();
 
   if ( m_notificationQueue.empty() ) {
@@ -285,7 +278,7 @@ void LEDMatrixDevice::run()
   }
   else if (m_displayState == DisplayState::Notification)
   {
-    bool iconExists = m_notificationQueue.front()->icon != nullptr;
+    bool iconExists = m_notificationQueue.front()->icon.size() > 0;
     uint8_t screenLength = iconExists ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
     const char *text = m_notificationQueue.front()->text.c_str();
     int textLength = m_notificationQueue.front()->text.length();
@@ -298,7 +291,7 @@ void LEDMatrixDevice::run()
     drawString(text, textLength, m_textX, 0);
 
     if (iconExists) {
-      drawSprite(m_notificationQueue.front()->icon, 0, 0, 8, 8);
+      drawSprite(m_notificationQueue.front()->icon.data(), 0, 0, 8, 8);
     }
 
     delay((textLength > screenLength ? 50 : 300));
