@@ -4,6 +4,7 @@
 
 #include <queue>
 #include <vector>
+#include <memory>
 #include "Config.h"
 
 #include <LEDMatrixDriver.hpp>
@@ -90,7 +91,7 @@ private:
   byte *m_notificationIcon = nullptr;
   byte m_emptyIcon[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   int m_textX = 0;
-  std::queue<Notification*> m_notificationQueue;
+  std::queue<std::shared_ptr<Notification>> m_notificationQueue;
 
   /* Notification timer */
   bool m_notificationTimerActive = false;

@@ -82,7 +82,7 @@ uint8_t LEDMatrixDevice::flipByte(uint8_t c) const
 
 void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int timeout)
 {
-  Notification *ntf = new Notification();
+  std::shared_ptr<Notification> ntf = std::make_shared<Notification>();
   if (icon) {
     ntf->icon = icon;
   } else {
@@ -107,7 +107,7 @@ void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int t
     m_displayState = DisplayState::Notification;
   }
 
-  m_notificationQueue.push(ntf); //Notification in the queue
+  m_notificationQueue.push(ntf); // Notification in the queue
 
 }
 
@@ -217,12 +217,11 @@ void LEDMatrixDevice::dismissNotification()
   m_notificationTimerActive = false;
 
   // Release notification memory
-  Notification *ntf = m_notificationQueue.front();
   // Release icon's memory
-  if (ntf->icon) {
-    delete [] ntf->icon;
+  if (m_notificationQueue.front()->icon) {
+    delete [] m_notificationQueue.front()->icon;
   }
-  delete ntf;
+  //delete ntf;
 
   //Remove the element from the queue
   m_notificationQueue.pop();
@@ -295,12 +294,10 @@ void LEDMatrixDevice::run()
   }
   else if (m_displayState == DisplayState::Notification)
   {
-    Notification *ntf = m_notificationQueue.front();
-
-    bool iconExists = ntf->icon != nullptr;
+    bool iconExists = m_notificationQueue.front()->icon != nullptr;
     uint8_t screenLength = iconExists ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
-    const char *text = ntf->text.c_str();
-    int textLength = ntf->text.length();
+    const char *text = m_notificationQueue.front()->text.c_str();
+    int textLength = m_notificationQueue.front()->text.length();
     if (textLength > screenLength) {
       m_textX = (m_textX < -8 * textLength + 8 * iconExists) ? LEDMATRIX_WIDTH : (m_textX - 1);
     } else {
@@ -310,7 +307,7 @@ void LEDMatrixDevice::run()
     drawString(text, textLength, m_textX, 0);
 
     if (iconExists) {
-      drawSprite(ntf->icon, 0, 0, 8, 8);
+      drawSprite(m_notificationQueue.front()->icon, 0, 0, 8, 8);
     }
 
     delay((textLength > screenLength ? 50 : 300));
