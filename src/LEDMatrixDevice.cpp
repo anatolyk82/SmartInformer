@@ -104,20 +104,20 @@ void LEDMatrixDevice::setNotification( const std::vector<byte> &icon, const std:
 }
 
 
-void LEDMatrixDevice::setScreen( uint8_t id, byte *icon, const std::string &text )
+void LEDMatrixDevice::setScreen( uint8_t id, const std::vector<byte> &icon, const std::string &text )
 {
   for (auto screen : m_screenList) {
     if (screen->id == id) {
-      screen->icon = icon;
-      screen->text = text;
+      screen->icon = std::move(icon);
+      screen->text = std::string(text);
       return;
     }
   }
 
   std::shared_ptr<Screen> scr = std::make_shared<Screen>();
   scr->id = id;
-  scr->icon = icon;
-  scr->text = text;
+  scr->icon = std::move(icon);
+  scr->text = std::move(text);
   m_screenList.push_back(scr);
 }
 
@@ -259,18 +259,19 @@ void LEDMatrixDevice::run()
   }
   else if (m_displayState == DisplayState::Screen)
   {
-    uint8_t screenLength = m_screenList.at(m_screenIndex)->icon ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
+    bool iconExists = m_screenList.at(m_screenIndex)->icon.size() > 0;
+    uint8_t screenLength = iconExists ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
     const char *text = m_screenList.at(m_screenIndex)->text.c_str();
     int textLength = m_screenList.at(m_screenIndex)->text.length();
 
     if (textLength > screenLength) {
-      m_textX = (m_textX < -8 * textLength + 8 * (m_screenList.at(m_screenIndex)->icon != nullptr)) ? LEDMATRIX_WIDTH : (m_textX - 1);
+      m_textX = (m_textX < -8 * textLength + 8 * iconExists) ? LEDMATRIX_WIDTH : (m_textX - 1);
     } else {
       m_textX = (screenLength - textLength) * 8 / 2 + 8;
     }
 
-    if (m_screenList.at(m_screenIndex)->icon) {
-      drawSprite(m_screenList.at(m_screenIndex)->icon, 0, 0, 8, 8);
+    if (iconExists) {
+      drawSprite(m_screenList.at(m_screenIndex)->icon.data(), 0, 0, 8, 8);
     }
     drawString( text, textLength, m_textX, 0 );
 

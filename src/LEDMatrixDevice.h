@@ -21,7 +21,7 @@ struct Notification
 struct Screen
 {
   uint8_t id;
-  byte *icon = nullptr;
+  std::vector<byte> icon;
   std::string text;
 };
 
@@ -41,7 +41,7 @@ public:
 
   void setTime( uint8_t hour, uint8_t minute, uint8_t second, uint8_t day, uint8_t month, uint16_t year );
   void setNotification( const std::vector<byte> &icon, const std::string &text, int timeout = -1 );
-  void setScreen( uint8_t id, byte *icon, const std::string &text );
+  void setScreen( uint8_t id, const std::vector<byte> &icon, const std::string &text );
 
   /*
    * Run the device.
