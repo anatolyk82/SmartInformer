@@ -83,16 +83,8 @@ uint8_t LEDMatrixDevice::flipByte(uint8_t c) const
 void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int timeout)
 {
   std::shared_ptr<Notification> ntf = std::make_shared<Notification>();
-  if (icon) {
-    ntf->icon = icon;
-  } else {
-    ntf->icon = nullptr;
-  }
-
-  if (text != "") {
-    ntf->text = text;
-  }
-
+  ntf->icon = icon;
+  ntf->text = text;
   if (timeout > 0) {
     ntf->timeout = timeout;
   }
@@ -282,7 +274,7 @@ void LEDMatrixDevice::run()
     if (textLength > screenLength) {
       m_textX = (m_textX < -8 * textLength + 8 * (scr->icon != nullptr)) ? LEDMATRIX_WIDTH : (m_textX - 1);
     } else {
-      m_textX = ((screenLength - textLength) / 2 + 1) * 8;
+      m_textX = (screenLength - textLength) * 8 / 2 + 8;
     }
 
     if (scr->icon) {
@@ -301,7 +293,7 @@ void LEDMatrixDevice::run()
     if (textLength > screenLength) {
       m_textX = (m_textX < -8 * textLength + 8 * iconExists) ? LEDMATRIX_WIDTH : (m_textX - 1);
     } else {
-      m_textX = ((screenLength - textLength) / 2 + 1) * 8;
+      m_textX = (screenLength - textLength) * 8 / 2 + 8;
     }
 
     drawString(text, textLength, m_textX, 0);
