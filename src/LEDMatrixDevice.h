@@ -99,7 +99,7 @@ private:
   unsigned long m_notificationTimerTimeoutMilliseconds = 0;
 
   /* Screen */
-  std::vector<Screen*> m_screenList;
+  std::vector<std::shared_ptr<Screen>> m_screenList;
   uint8_t m_screenIndex = 0;
 
   bool m_screenTimerActive = false;

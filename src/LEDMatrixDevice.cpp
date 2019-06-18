@@ -106,7 +106,7 @@ void LEDMatrixDevice::setNotification(byte *icon, const std::string &text, int t
 
 void LEDMatrixDevice::setScreen( uint8_t id, byte *icon, const std::string &text )
 {
-  for (Screen* screen : m_screenList) {
+  for (auto screen : m_screenList) {
     if (screen->id == id) {
       screen->icon = icon;
       screen->text = text;
@@ -114,7 +114,7 @@ void LEDMatrixDevice::setScreen( uint8_t id, byte *icon, const std::string &text
     }
   }
 
-  Screen *scr = new Screen();
+  std::shared_ptr<Screen> scr = std::make_shared<Screen>();
   scr->id = id;
   scr->icon = icon;
   scr->text = text;
@@ -192,7 +192,7 @@ void LEDMatrixDevice::dismissScreen()
   m_screenTimerStart = 0;
   m_screenTimerActive = false;
 
-  m_screenIndex = m_screenIndex < (m_screenList.size()-1) ? m_screenIndex + 1 : 0;
+  m_screenIndex = m_screenIndex < (m_screenList.size() - 1) ? m_screenIndex + 1 : 0;
 
   if (m_displayState != DisplayState::Notification) {
     m_displayState = DisplayState::Time;
@@ -266,19 +266,18 @@ void LEDMatrixDevice::run()
   }
   else if (m_displayState == DisplayState::Screen)
   {
-    Screen *scr = m_screenList.at(m_screenIndex);
-    uint8_t screenLength = scr->icon ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
-    const char *text = scr->text.c_str();
-    int textLength = scr->text.length();
+    uint8_t screenLength = m_screenList.at(m_screenIndex)->icon ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
+    const char *text = m_screenList.at(m_screenIndex)->text.c_str();
+    int textLength = m_screenList.at(m_screenIndex)->text.length();
 
     if (textLength > screenLength) {
-      m_textX = (m_textX < -8 * textLength + 8 * (scr->icon != nullptr)) ? LEDMATRIX_WIDTH : (m_textX - 1);
+      m_textX = (m_textX < -8 * textLength + 8 * (m_screenList.at(m_screenIndex)->icon != nullptr)) ? LEDMATRIX_WIDTH : (m_textX - 1);
     } else {
       m_textX = (screenLength - textLength) * 8 / 2 + 8;
     }
 
-    if (scr->icon) {
-      drawSprite(scr->icon, 0, 0, 8, 8);
+    if (m_screenList.at(m_screenIndex)->icon) {
+      drawSprite(m_screenList.at(m_screenIndex)->icon, 0, 0, 8, 8);
     }
     drawString( text, textLength, m_textX, 0 );
 
