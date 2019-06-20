@@ -267,13 +267,13 @@ void LEDMatrixDevice::run()
     if (textLength > screenLength) {
       m_textX = (m_textX < -8 * textLength + 8 * iconExists) ? LEDMATRIX_WIDTH : (m_textX - 1);
     } else {
-      m_textX = (screenLength - textLength) * 8 / 2 + 8;
+      m_textX = (screenLength - textLength) * 8 / 2 + 8 * iconExists;
     }
 
+    drawString( text, textLength, m_textX, 0 );
     if (iconExists) {
       drawSprite(m_screenList.at(m_screenIndex)->icon.data(), 0, 0, 8, 8);
     }
-    drawString( text, textLength, m_textX, 0 );
 
     delay((textLength > screenLength ? 50 : 300));
   }
@@ -283,14 +283,14 @@ void LEDMatrixDevice::run()
     uint8_t screenLength = iconExists ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
     const char *text = m_notificationQueue.front()->text.c_str();
     int textLength = m_notificationQueue.front()->text.length();
+    
     if (textLength > screenLength) {
       m_textX = (m_textX < -8 * textLength + 8 * iconExists) ? LEDMATRIX_WIDTH : (m_textX - 1);
     } else {
-      m_textX = (screenLength - textLength) * 8 / 2 + 8;
+      m_textX = (screenLength - textLength) * 8 / 2 + 8 * iconExists;
     }
 
     drawString(text, textLength, m_textX, 0);
-
     if (iconExists) {
       drawSprite(m_notificationQueue.front()->icon.data(), 0, 0, 8, 8);
     }
