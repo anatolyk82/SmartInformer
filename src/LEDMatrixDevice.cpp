@@ -169,13 +169,13 @@ void LEDMatrixDevice::buttonClicked()
     m_screenTimerActive = true;
     m_screenTimerStart = millis();
     m_driver->clear();
+  } else if ( (m_screenIndex == (m_screenList.size() - 1)) && (m_displayState == DisplayState::Screen) ) {
+    dismissScreen();
   } else if ((m_displayState == DisplayState::Screen) && (m_screenList.size() > 1)) {
     dismissScreen();
     m_displayState = DisplayState::Screen;
     m_screenTimerActive = true;
     m_screenTimerStart = millis();
-  } else if ((m_displayState == DisplayState::Screen) && (m_screenList.size() == 1)) {
-    dismissScreen();
   }
 }
 
@@ -313,6 +313,7 @@ void LEDMatrixDevice::run()
   if ( ((millis() - m_screenTimerStart) >= m_screenTimerTimeoutMilliseconds) &&
       (m_screenTimerStart > 0) && m_screenTimerActive) {
     dismissScreen();
+    m_screenIndex = 0;
   }
 
   m_driver->display();

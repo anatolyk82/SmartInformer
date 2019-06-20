@@ -104,7 +104,7 @@ private:
 
   bool m_screenTimerActive = false;
   unsigned long m_screenTimerStart = 0;
-  unsigned long m_screenTimerTimeoutMilliseconds = 4000;
+  unsigned long m_screenTimerTimeoutMilliseconds = 6000;
 };
 
 #endif //ESP_LIGHT_DEVICE_CONTROL_H
