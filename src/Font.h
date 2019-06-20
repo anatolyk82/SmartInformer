@@ -1,7 +1,10 @@
 #ifndef ESP_INFORMER_FONT_H
 #define ESP_INFORMER_FONT_H
 
-byte font[128][8] = { // http://arduino-er.blogspot.hk/2014/08/port-ascii-font-to-arduino-88-led-matrix.html
+// Source for the fort:
+// https://github.com/dhepper/font8x8
+
+byte font[128][8] = {
                     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // U+0020 (space)
                     { 0x18, 0x3C, 0x3C, 0x18, 0x18, 0x00, 0x18, 0x00}, // U+0021 (!)
                     { 0x36, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // U+0022 (")
