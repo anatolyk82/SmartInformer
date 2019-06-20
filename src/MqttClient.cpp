@@ -243,5 +243,5 @@ void DeviceMqttClient::publishDeviceState() {
 
   Serial.printf("\nMQTT: Publish state: %s %s\n", MQTT_TOPIC_STATE, buffer);
 
-  publish(MQTT_TOPIC_STATE, 0, true, buffer);
+  publish(MQTT_TOPIC_STATE, 0, false, buffer);
 }
