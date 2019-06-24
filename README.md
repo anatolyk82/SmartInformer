@@ -1,5 +1,10 @@
 # Informer
 
+
+<p align="center">
+  <img width="340" src="doc/informer.jpg">
+</p>
+
  The project provides a firmware for a smart informer built with ESP8288 and 8x8 LED matrixes.
 The idea is to get various information provided by Home Assistant. All information is sent by mqtt messages. Configuration of the device can be done over mqtt messages as well.
 
