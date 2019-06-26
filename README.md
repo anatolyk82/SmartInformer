@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img width="340" src="doc/informer.jpg">
+  <img width="400" src="doc/informer.jpg">
 </p>
 
  The project provides a firmware for a smart informer built with ESP8288 and 8x8 LED matrixes.
@@ -51,6 +51,7 @@ The mqtt topic, where the informer receives settings messages, is `informer/set/
   "brightness": 7
 }
 ```
+Brightness can take values between 0 and 10.
 
 * Switch on/off the screen. The payload is a json document:
 
@@ -70,7 +71,7 @@ The mqtt topic, where the informer receives settings messages, is `informer/set/
 
 ## Time
 
- Time in RTC can corrected via an mqtt message received on the topic `informer/set/time`. The payload is a json document:
+ Time in RTC can corrected via an mqtt message received to the topic `informer/set/time`. The payload is a json document:
  ```json
  {
    "year": 2019,
@@ -86,7 +87,7 @@ The mqtt topic, where the informer receives settings messages, is `informer/set/
 
  ## Notifications
 
- A quick message, received to the topic `informer/set/notification`, will be displayed for a certain period of time. Every notification contain text and an icon. Icon must be 8x8 pixels and always placed at the left side:
+ A quick message, received to the topic `informer/set/notification`, will be displayed for a certain period of time. Every notification message contains text and an icon. The icon must be 8x8 pixels and placed always at the left side:
 
  ```
  |X|_|_|_|_|_|_|_|
@@ -104,7 +105,7 @@ The payload of a notification message:
 }
 ```
 
-The `icon` is a json array contains 8 bytes which will be written into the first matrix. The `timeout` - number of seconds which define how long the message will be displayed.
+The `icon` is a json array contains 8 bytes which will be written into the first matrix. The `timeout` - number of seconds which define how long the message will be displayed. If the timeout is 0, a notification will be visible until the hard button is pressed.
 
 
 ## Screens
@@ -119,3 +120,44 @@ By pressing the button on the informer, a user can switch screens. By default ti
 ```
 
 If a message is received with the same `id`, it will update the existing screen in memory.
+
+## Home Assistant configuration
+
+Here is an example of automation in Home Assistant how to send a message to the Informer
+
+```yaml
+- alias: '[Informer] Notify sunset'
+  hide_entity: true
+  initial_state: true
+  trigger:
+  - platform: sun
+    event: sunset
+  action:
+  - service: mqtt.publish
+    data_template:
+      topic: 'informer/set/notification'
+      payload: "{'icon':[8,42,28,127,0,54,28,8], 'text': 'sunset', 'timeout':60}"
+      retain: false
+      qos: 0
+
+```
+Another example shows how to send a screen with outside temperature:
+
+```yaml
+- alias: '[Informer] Temperature outside'
+  hide_entity: true
+  initial_state: true
+  trigger:
+  - platform: time_pattern
+    minutes: '/15'
+    seconds: 0
+  action:
+  - service: mqtt.publish
+    data_template:
+      topic: 'informer/set/screen'
+      payload: "{'icon':[228,166,239,6,6,22,12,0], 'text':'{{ states.sensor.temperature_outdoor.state | round(0) }}^', 'id':1}"
+      retain: false
+      qos: 0
+
+```
+It updates the outside temperature every 15 minutes.
