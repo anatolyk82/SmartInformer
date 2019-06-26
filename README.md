@@ -51,7 +51,7 @@ The mqtt topic, where the informer receives settings messages, is `informer/set/
   "brightness": 7
 }
 ```
-Brightness can take values between 0 and 10.
+Brightness can take values between 0 and 15.
 
 * Switch on/off the screen. The payload is a json document:
 

@@ -137,7 +137,7 @@ void LEDMatrixDevice::setTime( uint8_t hour, uint8_t minute, uint8_t second, uin
 
 void LEDMatrixDevice::setBrightness( uint8_t brightness )
 {
-  if ( brightness >= 0 && brightness < 11 ) {
+  if ( brightness >= 0 && brightness <= 15 ) {
     m_brightness = brightness;
     m_driver->setIntensity(brightness);
   }
@@ -283,7 +283,7 @@ void LEDMatrixDevice::run()
     uint8_t screenLength = iconExists ? LEDMATRIX_SEGMENTS - 1 : LEDMATRIX_SEGMENTS;
     const char *text = m_notificationQueue.front()->text.c_str();
     int textLength = m_notificationQueue.front()->text.length();
-    
+
     if (textLength > screenLength) {
       m_textX = (m_textX < -8 * textLength + 8 * iconExists) ? LEDMATRIX_WIDTH : (m_textX - 1);
     } else {
