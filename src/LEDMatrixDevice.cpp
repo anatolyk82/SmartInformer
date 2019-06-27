@@ -2,7 +2,6 @@
 #include "Font.h"
 #include <string>
 
-#include <Arduino.h>
 #include "DS1302RTC.h" // https://github.com/iot-playground/Arduino/tree/master/external_libraries/DS1302RTC
 
 LEDMatrixDevice::LEDMatrixDevice()
@@ -11,7 +10,7 @@ LEDMatrixDevice::LEDMatrixDevice()
   m_rtc = new DS1302RTC( RTC_RST_PIN, RTC_DAT_PIN,  RTC_CLK_PIN ); //CE, IO, CLK
 
   m_driver->setEnabled(true);
-  m_driver->setIntensity(m_brightness); // 0 = low, 10 = high
+  m_driver->setIntensity(m_brightness); // 0 = low, 15 = high
   m_driver->clear();
 
   m_displayState = DisplayState::Time;

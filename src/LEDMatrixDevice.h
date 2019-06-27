@@ -1,6 +1,5 @@
-#ifndef ESP_LIGHT_DEVICE_CONTROL_H
-#define ESP_LIGHT_DEVICE_CONTROL_H
-
+#ifndef ESP_LED_MATRIX_DEVICE_H
+#define ESP_LED_MATRIX_DEVICE_H
 
 #include <queue>
 #include <vector>
@@ -87,9 +86,6 @@ private:
   bool m_switchOffAfterNotification = false;
 
   /* Notifications */
-  std::string m_notificationText;
-  byte *m_notificationIcon = nullptr;
-  byte m_emptyIcon[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   int m_textX = 0;
   std::queue<std::shared_ptr<Notification>> m_notificationQueue;
 
@@ -107,4 +103,4 @@ private:
   unsigned long m_screenTimerTimeoutMilliseconds = 6000;
 };
 
-#endif //ESP_LIGHT_DEVICE_CONTROL_H
+#endif //ESP_LED_MATRIX_DEVICE_H
