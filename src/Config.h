@@ -4,7 +4,7 @@
 #include <string>
 #include <Arduino.h>
 
-#define FIRMWARE_VERSION "0.1.0"                    /* Firmware version */
+#define FIRMWARE_VERSION "0.2.x"                    /* Firmware version */
 
 #define INTERVAL_PUBLISH_STATE 600000               /* Interval to send statistics to the mqtt broker */
 

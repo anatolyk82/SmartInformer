@@ -1,6 +1,4 @@
 
-#include <SimpleTimer.h>          // https://github.com/schinken/SimpleTimer
-
 #include "Config.h"
 #include "UiManager.h"
 #include "MqttClient.h"
@@ -17,13 +15,11 @@ DeviceMqttClient mqttClient;
 LEDMatrixDevice *device;
 
 /* Timer to publish the current state */
-SimpleTimer timer;
+//SimpleTimer timer;
+unsigned long timer_startTime = 0;
 
 ControlButton button;
 
-void publishDeviceStateTimer() {
-  mqttClient.publishDeviceState();
-}
 
 void setup() {
 
@@ -89,18 +85,27 @@ void setup() {
   button.onPressAndHold( std::bind(&LEDMatrixDevice::buttonPressAndHold, device) );
 
   /* Publish device state periodicly */
-  timer.setInterval(INTERVAL_PUBLISH_STATE, publishDeviceStateTimer);
+  timer_startTime = millis();
 }
 
 
 void loop() {
-  timer.run();
+  /* Periodic task to publish the current state via mqtt */
+  unsigned long timer_currentTime = millis();
+  if ( timer_currentTime > timer_startTime ) {
+    if ( (timer_currentTime - timer_startTime) >= INTERVAL_PUBLISH_STATE ) {
+      mqttClient.publishDeviceState();
+      timer_startTime = timer_currentTime;
+    }
+  } else {
+    timer_startTime = timer_currentTime;
+  }
 
   device->run();
   button.run();
 
-  if (WiFi.status() != WL_CONNECTED) {
+  /*if (WiFi.status() != WL_CONNECTED) {
     Serial.println("loop(): WiFi is not connected. Reset the device to initiate connection again.");
     ESP.restart();
-  }
+  }*/
 }
