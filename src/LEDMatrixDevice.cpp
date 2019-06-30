@@ -226,9 +226,9 @@ void LEDMatrixDevice::dismissNotification()
 }
 
 
-void LEDMatrixDevice::run()
+int LEDMatrixDevice::run()
 {
-
+  int returnDelay = 0;
   if ((m_notificationTimerStart == 0) && (m_notificationTimerActive)) {
     m_notificationTimerStart = millis();
   }
@@ -244,7 +244,7 @@ void LEDMatrixDevice::run()
     if (m_secondsVisible) {
       std::sprintf( buf, "%02d:%02d:%02d", hour(myTime), minute(myTime), second(myTime) );
       drawString(buf, 8, 0, 0);
-      delay(500);
+      returnDelay = 500;
     } else {
       if (m_secondDelimiterVisible) {
         std::sprintf( buf, "%02d:%02d", hour(myTime), minute(myTime) );
@@ -253,7 +253,7 @@ void LEDMatrixDevice::run()
       }
       m_secondDelimiterVisible = !m_secondDelimiterVisible;
       drawString(buf, 5, 13, 0);
-      delay(1000);
+      returnDelay = 1000;
     }
   }
   else if (m_displayState == DisplayState::Screen)
@@ -274,7 +274,7 @@ void LEDMatrixDevice::run()
       drawSprite(m_screenList.at(m_screenIndex)->icon.data(), 0, 0, 8, 8);
     }
 
-    delay((textLength > screenLength ? 50 : 300));
+    returnDelay = (textLength > screenLength ? 50 : 300);
   }
   else if (m_displayState == DisplayState::Notification)
   {
@@ -294,12 +294,12 @@ void LEDMatrixDevice::run()
       drawSprite(m_notificationQueue.front()->icon.data(), 0, 0, 8, 8);
     }
 
-    delay((textLength > screenLength ? 50 : 300));
+    returnDelay = (textLength > screenLength ? 50 : 300);
   }
   else
   {
     m_driver->setPixel(0, 0, true);
-    delay(1000);
+    returnDelay = 1000;
   }
 
   /* The notification timer */
@@ -316,4 +316,6 @@ void LEDMatrixDevice::run()
   }
 
   m_driver->display();
+
+  return returnDelay;
 }

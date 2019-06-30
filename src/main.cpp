@@ -101,8 +101,10 @@ void loop() {
     timer_startTime = timer_currentTime;
   }
 
-  device->run();
+  int delayMillisecs = device->run();
   button.run();
+
+  delay(delayMillisecs);
 
   /*if (WiFi.status() != WL_CONNECTED) {
     Serial.println("loop(): WiFi is not connected. Reset the device to initiate connection again.");

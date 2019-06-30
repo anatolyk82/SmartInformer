@@ -43,10 +43,10 @@ public:
   void setScreen( uint8_t id, const std::vector<byte> &icon, const std::string &text );
 
   /*
-   * Run the device.
+   * Run the device. Returns amount of milliseconds to delay
    * It must be called in loop()
    */
-  void run();
+  int run();
 
 
   /* Getters */
