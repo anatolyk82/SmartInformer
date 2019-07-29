@@ -1,5 +1,4 @@
 #include "LEDMatrixDevice.h"
-#include "Font.h"
 #include <string>
 
 #include "DS1302RTC.h" // https://github.com/iot-playground/Arduino/tree/master/external_libraries/DS1302RTC
@@ -10,7 +9,7 @@ LEDMatrixDevice::LEDMatrixDevice()
   m_rtc = new DS1302RTC( RTC_RST_PIN, RTC_DAT_PIN,  RTC_CLK_PIN ); //CE, IO, CLK
 
   m_driver->setEnabled(true);
-  m_driver->setIntensity(m_brightness); // 0 = low, 15 = high
+  m_driver->setBrightness(m_brightness); // 0 = low, 15 = high
   m_driver->clear();
 
   m_displayState = DisplayState::Time;
@@ -26,56 +25,6 @@ LEDMatrixDevice::~LEDMatrixDevice()
   if (m_driver) {
     delete m_driver;
   }
-}
-
-void LEDMatrixDevice::drawSprite( byte* sprite, int x, int y, int width, int height )
-{
-  // The mask is used to get the column bit from the sprite row
-  byte mask = B10000000;
-  for( int iy = 0; iy < height; iy++ )
-  {
-    for( int ix = 0; ix < width; ix++ )
-    {
-      //lmd.setPixel(x + ix, y + iy, (bool)(sprite[iy] & mask ));
-      m_driver->setPixel(x + ix, y + iy, (bool)(flipByte(sprite[iy]) & mask ));
-
-      // Shift the mask by one pixel to the right
-      mask = mask >> 1;
-    }
-    // Reset column mask
-    mask = B10000000;
-  }
-}
-
-
-void LEDMatrixDevice::drawString( const char* text, int len, int x, int y )
-{
-  for( int idx = 0; idx < len; idx ++ )
-  {
-    int c = text[idx] - 32;
-
-    // stop if char is outside visible area
-    if( x + idx * 8  > LEDMATRIX_WIDTH )
-      return;
-
-    // only draw if char is visible
-    if( 8 + x + idx * 8 > 0 ) {
-      drawSprite( font[c], x + idx * 8, y, 8, 8 );
-    }
-
-  }
-}
-
-
-uint8_t LEDMatrixDevice::flipByte(uint8_t c) const
-{
-  uint8_t r = 0;
-  for (uint8_t i = 0; i < 8; i++) {
-    r <<= 1;
-    r |= c & 1;
-    c >>= 1;
-  }
-  return r;
 }
 
 
@@ -138,7 +87,7 @@ void LEDMatrixDevice::setBrightness( uint8_t brightness )
 {
   if ( brightness >= 0 && brightness <= 15 ) {
     m_brightness = brightness;
-    m_driver->setIntensity(brightness);
+    m_driver->setBrightness(brightness);
   }
 }
 
@@ -243,7 +192,7 @@ int LEDMatrixDevice::run()
     char buf[8];
     if (m_secondsVisible) {
       std::sprintf( buf, "%02d:%02d:%02d", hour(myTime), minute(myTime), second(myTime) );
-      drawString(buf, 8, 0, 0);
+      m_driver->drawString(buf, 8, 0, 0);
       returnDelay = 500;
     } else {
       if (m_secondDelimiterVisible) {
@@ -252,7 +201,7 @@ int LEDMatrixDevice::run()
         std::sprintf( buf, "%02d %02d", hour(myTime), minute(myTime) );
       }
       m_secondDelimiterVisible = !m_secondDelimiterVisible;
-      drawString(buf, 5, 13, 0);
+      m_driver->drawString(buf, 5, 13, 0);
       returnDelay = 1000;
     }
   }
@@ -269,9 +218,9 @@ int LEDMatrixDevice::run()
       m_textX = (screenLength - textLength) * 8 / 2 + 8 * iconExists;
     }
 
-    drawString( text, textLength, m_textX, 0 );
+    m_driver->drawString( text, textLength, m_textX, 0 );
     if (iconExists) {
-      drawSprite(m_screenList.at(m_screenIndex)->icon.data(), 0, 0, 8, 8);
+      m_driver->drawSprite(m_screenList.at(m_screenIndex)->icon.data(), 0, 0, 8, 8);
     }
 
     returnDelay = (textLength > screenLength ? 50 : 300);
@@ -289,9 +238,9 @@ int LEDMatrixDevice::run()
       m_textX = (screenLength - textLength) * 8 / 2 + 8 * iconExists;
     }
 
-    drawString(text, textLength, m_textX, 0);
+    m_driver->drawString(text, textLength, m_textX, 0);
     if (iconExists) {
-      drawSprite(m_notificationQueue.front()->icon.data(), 0, 0, 8, 8);
+      m_driver->drawSprite(m_notificationQueue.front()->icon.data(), 0, 0, 8, 8);
     }
 
     returnDelay = (textLength > screenLength ? 50 : 300);

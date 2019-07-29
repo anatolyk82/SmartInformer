@@ -6,7 +6,7 @@
 #include <memory>
 #include "Config.h"
 
-#include <LEDMatrixDriver.hpp>
+#include "LEDMatrixDriver.h"
 
 class DS1302RTC;
 
@@ -64,10 +64,6 @@ public:
   void buttonPressAndHold();
 
 private:
-  void drawSprite( byte* sprite, int x, int y, int width, int height );
-  void drawString( const char* text, int len, int x, int y );
-  uint8_t flipByte( uint8_t c ) const;
-
   void dismissScreen();
   void dismissNotification();
 
